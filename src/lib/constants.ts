@@ -1,0 +1,13 @@
+export const KM_PER_UNIT = 1000;
+
+export const AU_IN_KM = 149_597_870.7;
+
+export const AU_IN_UNITS = AU_IN_KM / KM_PER_UNIT;
+
+export const SUN_DIAMETER_KM = 1_391_016;
+export const EARTH_DIAMETER_KM = 12_742;
+
+export const SUN_RADIUS_UNITS = SUN_DIAMETER_KM / 2 / KM_PER_UNIT;
+export const EARTH_RADIUS_UNITS = EARTH_DIAMETER_KM / 2 / KM_PER_UNIT;
+
+export const EARTH_ORBIT_RADIUS_UNITS = AU_IN_UNITS;
