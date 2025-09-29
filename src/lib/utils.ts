@@ -2,16 +2,14 @@ import * as THREE from "three";
 import type { OrbitalData } from "./types";
 import { AU_IN_UNITS } from "./constants";
 
+// llm garbage. but works
 export function getOrbitPosition(
   orbitData: OrbitalData,
   theta: number,
 ): THREE.Vector3 {
-  // Semi-major axis (in AU)
   const a_au = parseFloat(orbitData.semi_major_axis);
-  // Convert to scene units
   const a = a_au * AU_IN_UNITS;
 
-  // Apply visual compression for large orbits (optional, aesthetic)
   const scale = 3 * AU_IN_UNITS;
   const scaledA = a * scale;
 
@@ -22,16 +20,12 @@ export function getOrbitPosition(
   );
   const ω = THREE.MathUtils.degToRad(parseFloat(orbitData.perihelion_argument));
 
-  // Elliptical orbit: r(θ) = a(1-e²) / (1 + e cos θ)
   const r = (scaledA * (1 - e * e)) / (1 + e * Math.cos(theta));
 
   let pos = new THREE.Vector3(r * Math.cos(theta), r * Math.sin(theta), 0);
 
-  // Rotate by argument of perihelion
   pos.applyMatrix4(new THREE.Matrix4().makeRotationZ(ω));
-  // Inclination
   pos.applyMatrix4(new THREE.Matrix4().makeRotationX(i));
-  // Longitude of ascending node
   pos.applyMatrix4(new THREE.Matrix4().makeRotationZ(Ω));
 
   return pos;
