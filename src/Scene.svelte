@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { T, useLoader } from "@threlte/core";
+  import { T, useLoader, useTask } from "@threlte/core";
+  import SunModel from "./components/sun/sun.svelte";
   import {
     CameraControls,
     Environment,
@@ -7,39 +8,41 @@
     type CameraControlsRef,
   } from "@threlte/extras";
   import type { NearEarthObject } from "./lib/types";
-  import { EARTH_RADIUS_UNITS, KM_PER_UNIT } from "./lib/constants";
+  import {
+    EARTH_RADIUS_UNITS,
+    KM_PER_UNIT,
+    SUN_RADIUS_UNITS,
+  } from "./lib/constants";
   import AsteroidModel from "./components/asteroid/component.svelte";
   import EarthModel from "./components/earth/component.svelte";
   import { Asteroid } from "./components/asteroid/asteroid.svelte";
   import { Earth } from "./components/earth/earth.svelte";
-  import { HDRLoader } from "three/examples/jsm/Addons.js";
-  import { EquirectangularReflectionMapping } from "three";
+  import Orbit from "./components/orbit/orbit.svelte";
+  import EarthOrbit from "./components/orbit/earthOrbit.svelte";
 
   interactivity();
   let {
     asteroidDetails,
+    controls = $bindable(),
+    earth = $bindable(),
+    asteroid = $bindable(),
+    enableMovement,
   }: {
     asteroidDetails: NearEarthObject | null;
+    enableMovement: boolean;
+    asteroid: Asteroid;
+    earth: Earth;
+
+    controls?: CameraControlsRef;
   } = $props();
 
-  let asteroid = new Asteroid();
-  let earth = new Earth();
+  $inspect(asteroidDetails);
 
-  $effect(() => {
-    if (asteroidDetails?.orbital_data) {
-      asteroid.setOrbit(asteroidDetails.orbital_data);
+  useTask((d) => {
+    if (enableMovement) {
+      earth.move(d);
     }
   });
-
-  const { load } = useLoader(HDRLoader);
-  let controls = $state.raw<CameraControlsRef>();
-  const map = load("/assets/sky.hdr", {
-    transform(texture) {
-      texture.mapping = EquirectangularReflectionMapping;
-      return texture;
-    },
-  });
-  $inspect(asteroidDetails);
 </script>
 
 <T.PerspectiveCamera
@@ -52,23 +55,27 @@
   <CameraControls bind:ref={controls} />
 </T.PerspectiveCamera>
 
-<EarthModel bind:ref={earth.ref} scale={EARTH_RADIUS_UNITS} />
+<EarthModel
+  onclick={(ref) => {
+    const p = ref.object.position;
+    controls?.fitToBox(ref.object, true);
+    // controls?.(p.x, p.y, p.z, true);
+  }}
+  bind:ref={earth.ref}
+  scale={EARTH_RADIUS_UNITS * 10}
+/>
+<EarthOrbit />
+
 {#if asteroidDetails}
+  <Orbit orbitalData={asteroidDetails.orbital_data} />
+
   <AsteroidModel
-    bind:ref={asteroid.ref}
-    position={[29, 0, 0]}
-    onclick={(ref) => {
-      controls?.fitToBox(ref.object, true);
-      const p = ref.object.position;
-      controls?.setTarget(p.x, p.y, p.z, true);
-    }}
-    scale={asteroid.size(
-      asteroidDetails?.estimated_diameter.kilometers.estimated_diameter_max /
-        2 /
-        KM_PER_UNIT,
-    )}
+    scale={asteroidDetails.estimated_diameter.kilometers
+      .estimated_diameter_max /
+      2 /
+      KM_PER_UNIT}
   />
 {/if}
-{#await map then texture}
-  <Environment isBackground {texture} />
-{/await}
+
+<SunModel scale={SUN_RADIUS_UNITS} />
+<Environment url="/assets/sky.hdr" isBackground></Environment>

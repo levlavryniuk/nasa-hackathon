@@ -3,12 +3,19 @@
   import Scene from "./Scene.svelte";
   import { onMount } from "svelte";
   import type { NearEarthObject } from "./lib/types";
+  import type { CameraControlsRef } from "@threlte/extras";
+  import { Asteroid } from "./components/asteroid/asteroid.svelte";
+  import { Earth } from "./components/earth/earth.svelte";
 
   let apiKey = "EoDkZXkfbXs0Suw8bLJdGcIDNE4fkhzR2XhUjK10";
   let selected = $state<string>("");
 
   let asteroids = $state<NearEarthObject[]>([]);
   let asteroidDetails = $state<NearEarthObject | null>(null);
+
+  let asteroid = $state(new Asteroid());
+  let earth = $state(new Earth());
+  let enableMovement = $state(true);
 
   onMount(async () => {
     const res = await fetch(
@@ -17,6 +24,7 @@
     const data = await res.json();
     asteroids = data.near_earth_objects || [];
   });
+  let controls = $state.raw<CameraControlsRef>();
 
   $effect(() => {
     if (!selected) {
@@ -25,12 +33,14 @@
     }
     fetch(`https://www.neowsapp.com/rest/v1/neo/${selected}?api_key=${apiKey}`)
       .then((r) => r.json())
-      .then((r) => (asteroidDetails = r));
+      .then((r: NearEarthObject) => {
+        asteroidDetails = r;
+        asteroid.setOrbit(r.orbital_data);
+      });
   });
 </script>
 
 <div class="w-screen h-screen flex flex-col">
-  <!-- UI Overlay -->
   <div class="absolute top-4 z-50 left-4 bg-black/60 text-white p-3 rounded">
     <label>Asteroid: </label>
     <select bind:value={selected}>
@@ -74,11 +84,25 @@
         </div>
       </div>
     {/if}
+    <div>
+      Locate earth <button
+        onclick={() => {
+          enableMovement = !enableMovement;
+          const p = earth.ref?.position;
+          controls?.fitToBox(earth.ref!, true);
+          // controls?.(p.x, p.y, p.z, true);
+        }}>Locate</button
+      >
+    </div>
   </div>
 
-  <!-- Canvas for 3D Scene -->
-
   <Canvas>
-    <Scene {asteroidDetails} />
+    <Scene
+      {enableMovement}
+      bind:asteroid
+      bind:earth
+      {asteroidDetails}
+      bind:controls
+    />
   </Canvas>
 </div>

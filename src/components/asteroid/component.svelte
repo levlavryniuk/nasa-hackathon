@@ -30,6 +30,4 @@ Command: npx @threlte/gltf@3.0.1 ./assets/asteroid.glb
   {:catch err}
     {@render error?.({ error: err })}
   {/await}
-
-  {@render children?.({ ref })}
 </T.Group>
