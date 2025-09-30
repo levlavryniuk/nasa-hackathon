@@ -16,6 +16,7 @@
   let asteroid = $state(new Asteroid());
   let earth = $state(new Earth());
   let enableMovement = $state(true);
+  let controls = $state.raw<CameraControlsRef>();
 
   onMount(async () => {
     const res = await fetch(
@@ -24,7 +25,6 @@
     const data = await res.json();
     asteroids = data.near_earth_objects || [];
   });
-  let controls = $state.raw<CameraControlsRef>();
 
   $effect(() => {
     if (!selected) {

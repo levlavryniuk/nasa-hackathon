@@ -3,6 +3,7 @@ import { EARTH_ORBIT_RADIUS_UNITS } from "../../lib/constants";
 export class Earth {
   ref = $state<THREE.Group>();
   angle = $state(0);
+
   move(delta: number) {
     const daysPerSecond = 30;
     this.angle += (delta * daysPerSecond * Math.PI * 2) / 365.25;
