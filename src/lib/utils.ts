@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { OrbitalData } from "./types";
-import { AU_IN_UNITS } from "./constants";
+import { AU_IN_UNITS, ORBITAL_SCALING } from "./constants";
 
 export function getOrbitPosition(
   orbitData: OrbitalData,
@@ -8,7 +8,7 @@ export function getOrbitPosition(
 ): THREE.Vector3 {
   //
   const a_au = parseFloat(orbitData.semi_major_axis);
-  const a = a_au * AU_IN_UNITS;
+  const a = (a_au * AU_IN_UNITS) / ORBITAL_SCALING;
 
   const e = parseFloat(orbitData.eccentricity);
   const i = THREE.MathUtils.degToRad(parseFloat(orbitData.inclination));

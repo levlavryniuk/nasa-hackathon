@@ -82,6 +82,9 @@
             target="_blank">NASA JPL Page</a
           >
         </div>
+        <code>
+          {asteroidDetails.orbital_data.semi_major_axis}
+        </code>
       </div>
     {/if}
     <div>
